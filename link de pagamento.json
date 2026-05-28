@@ -1,0 +1,130 @@
+{
+  "name": "link de pagamento",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3fbc0565-9020-4b85-bb6e-8e53b03933d1",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e94315eb-3f5a-41b6-ae11-18631244d664",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api-sandbox.asaas.com/v3/paymentLinks",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "access_token",
+              "value": "$aact_hmlg_000MzkwODA2MWY2OGM3MWRlMDU2NWM3MzJlNzZmNGZhZGY6OjliMDExZDE4LWQ4YWEtNGNkMS05NDRhLTk0NmVhMzUzODgzYjo6JGFhY2hfNDllMjMzMjgtNWMxMi00ZTRiLWIyNmMtNmIyNTMwNjE1ZTAz"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "billingType",
+              "value": "CREDIT_CARD"
+            },
+            {
+              "name": "chargeType",
+              "value": "INSTALLMENT"
+            },
+            {
+              "name": "name",
+              "value": "Delivery"
+            },
+            {
+              "name": "description",
+              "value": "Segue Link de Pagamento"
+            },
+            {
+              "name": "value",
+              "value": "50"
+            },
+            {
+              "name": "maxInstallmentCount",
+              "value": "6"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "f3d8b704-f9b0-4ee7-ae03-b41bb952dda0",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "65c26239-6edd-4665-ac0f-a1595ba61fe8",
+  "meta": {
+    "instanceId": "cd73efdefd890ac4bc33e0de8679e68f96bddd2bd52def5dc65e9258f90a39d7"
+  },
+  "id": "TPL8Pb9MppbmlBj2",
+  "tags": [
+    {
+      "updatedAt": "2025-08-31T19:09:17.944Z",
+      "createdAt": "2025-08-31T19:09:17.944Z",
+      "id": "YDKpE0jlflwQREQ0",
+      "name": "Delivery"
+    }
+  ]
+}

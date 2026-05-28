@@ -1,0 +1,179 @@
+{
+  "name": "Agente_Cardapio",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2b028bb9-de07-4197-98bc-d69adc91f065",
+              "name": "telefoneCliente",
+              "value": "={{ $json.telefoneCliente }}",
+              "type": "string"
+            },
+            {
+              "id": "83a8097c-75fc-49c1-b277-c87b0825a785",
+              "name": "nomeCliente",
+              "value": "={{ $json.nomeCliente }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "18e01aba-7493-45fd-8d45-648ec7f27f43",
+      "name": "Formalizar",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "817f12c4-7d2a-45bd-8c12-74ab0c196308",
+              "name": "response",
+              "value": "=O cardápio já foi enviado! Pergunte agora, somente o pedido que o cliente deseja fazer.\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c5a5ed26-d43b-436c-af3b-c785938d0c40",
+      "name": "Resposta para o Agente",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        928,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "cardapio",
+        "filterType": "none"
+      },
+      "id": "cb7ed6f5-92db-4006-99b7-673b9370ffc7",
+      "name": "GetCardapio",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "FDFIP1gfUCWJDsnM",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "messages-api",
+        "operation": "send-document",
+        "instanceName": "Autobot.IA",
+        "remoteJid": "={{ $('Formalizar').item.json.telefoneCliente }}",
+        "media": "={{ $json.cardapio }}",
+        "fileName": "CardapioBucaneiro.pdf",
+        "options_message": {}
+      },
+      "type": "n8n-nodes-evolution-api.evolutionApi",
+      "typeVersion": 1,
+      "position": [
+        688,
+        0
+      ],
+      "id": "31754bcb-35d2-4608-94dc-e6daf0bf0ee2",
+      "name": "Enviar documento",
+      "credentials": {
+        "evolutionApi": {
+          "id": "mvVtMRsjuhZNwoqY",
+          "name": "AutoBot"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "d118e5d0-c8d8-4c72-bef7-de4ee9154d97",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Formalizar": {
+      "main": [
+        [
+          {
+            "node": "GetCardapio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GetCardapio": {
+      "main": [
+        [
+          {
+            "node": "Enviar documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar documento": {
+      "main": [
+        [
+          {
+            "node": "Resposta para o Agente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Formalizar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c7c8bbe0-e7e5-42e8-b530-f2536bb571bd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cd73efdefd890ac4bc33e0de8679e68f96bddd2bd52def5dc65e9258f90a39d7"
+  },
+  "id": "2689RAkAr90THyee",
+  "tags": [
+    {
+      "updatedAt": "2025-08-31T19:09:17.944Z",
+      "createdAt": "2025-08-31T19:09:17.944Z",
+      "id": "YDKpE0jlflwQREQ0",
+      "name": "Delivery"
+    }
+  ]
+}

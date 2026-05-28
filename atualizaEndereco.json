@@ -1,0 +1,179 @@
+{
+  "name": "atualizaEndereco",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        48,
+        384
+      ],
+      "id": "205fa0e7-aa35-4356-8025-da69a56e5126",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "79625d22-84b0-4d0d-b661-9a471719ff6a",
+              "name": "nomeCliente",
+              "value": "={{ $json.nomeCliente }}",
+              "type": "string"
+            },
+            {
+              "id": "b9c0ef22-5a16-45e7-a59c-ad2382d8caec",
+              "name": "telefoneCliente",
+              "value": "={{ $json.telefoneCliente }}",
+              "type": "string"
+            },
+            {
+              "id": "c206a094-e75b-4379-93a4-97868c277ee4",
+              "name": "enderecoCliente",
+              "value": "={{ $json.query }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        384
+      ],
+      "id": "e2046ce8-415b-4f02-bc0d-fb002a3a6107",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "73d6e94f-b073-4584-a1cc-0f7791e29664",
+              "name": "response",
+              "value": "ok",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        384
+      ],
+      "id": "eaa84f69-0006-48e6-919c-e1a9518de6ab",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "content": "## ATUALIZA ENDEREÇO\n",
+        "height": 400,
+        "width": 1180
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        272
+      ],
+      "id": "516d9f5f-c83d-4f45-9fe2-c10e5460ccfb",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "customers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telefoneCliente",
+              "condition": "eq",
+              "keyValue": "={{ $json.telefoneCliente }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "enderecoCliente",
+              "fieldValue": "={{ $json.enderecoCliente }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        592,
+        384
+      ],
+      "id": "54d7cd2d-97ed-42f8-9bf4-1c30e9ec0a3c",
+      "name": "Update a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "FDFIP1gfUCWJDsnM",
+          "name": "Autobot IA"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "05242ec5-8081-46a5-bf53-afc9d2c51cac",
+  "meta": {
+    "instanceId": "cd73efdefd890ac4bc33e0de8679e68f96bddd2bd52def5dc65e9258f90a39d7"
+  },
+  "id": "CBRY5Kk3LaeDB7w6",
+  "tags": [
+    {
+      "updatedAt": "2025-08-31T19:09:17.944Z",
+      "createdAt": "2025-08-31T19:09:17.944Z",
+      "id": "YDKpE0jlflwQREQ0",
+      "name": "Delivery"
+    }
+  ]
+}
