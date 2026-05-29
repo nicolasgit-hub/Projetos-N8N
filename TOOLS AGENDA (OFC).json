@@ -1,0 +1,2189 @@
+{
+  "name": "TOOLS AGENDA (OFC)",
+  "nodes": [
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('Config').item.json.iCalUID }}",
+          "mode": "id"
+        },
+        "start": "={{ $('Config').item.json.startDate }}",
+        "end": "={{ $('Config').item.json.startDate.toDateTime().plus(1,'hour') }}",
+        "additionalFields": {
+          "description": "=Cliente : {{ $('Config').item.json.name }}\nEmail: {{ $('Config').item.json.email }}\nPhone: {{ $('Config').item.json.phone }}\nObs:\n{{ $('Config').item.json.observacao }}",
+          "location": "={{ $('Config').item.json.local }}",
+          "summary": "=Cliente: {{ $('Config').item.json.name }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -4832,
+        -2144
+      ],
+      "id": "fb7069bb-6bad-4b2a-9eb4-f99363d402ec",
+      "name": "Google Calendar",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EQoXX37xEzsgZxEC",
+          "name": "Autobot Main"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "date_slots"
+            },
+            {
+              "name": "iCalUID"
+            },
+            {
+              "name": "email"
+            },
+            {
+              "name": "startDate"
+            },
+            {
+              "name": "duration"
+            },
+            {
+              "name": "observacao"
+            },
+            {
+              "name": "local"
+            },
+            {
+              "name": "function"
+            },
+            {
+              "name": "phone"
+            },
+            {
+              "name": "name"
+            },
+            {
+              "name": "event_id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -9232,
+        -2160
+      ],
+      "id": "349d45de-e237-4782-95f9-e745f3ef6d90",
+      "name": "Start"
+    },
+    {
+      "parameters": {
+        "jsCode": "return { \n'response':JSON.stringify($input.all().map(x =>x.json))\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3296,
+        -2112
+      ],
+      "id": "6a308f7b-f04e-4748-be07-e8ff30d3f539",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "650bc62c-eabf-4619-8852-4a6849e08311",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "be224dfc-49b0-4e49-a9d8-2cb293d76e20",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "85a93da5-3a20-467f-b0da-5146fec366a5",
+              "name": "startDate",
+              "value": "={{ $json?.startDate?.toDateTime() || $now }}",
+              "type": "string"
+            },
+            {
+              "id": "ecf33f20-1393-4a6a-be7f-82467a9befc2",
+              "name": "observacao",
+              "value": "={{ $json.observacao }}",
+              "type": "string"
+            },
+            {
+              "id": "32b1c3a1-69c6-494b-a55a-27253db34f1d",
+              "name": "local",
+              "value": "={{ $json.local }}",
+              "type": "string"
+            },
+            {
+              "id": "19258712-b3cc-4a1b-8f0f-b342b160de56",
+              "name": "duration",
+              "value": "={{ $json.duration }}",
+              "type": "string"
+            },
+            {
+              "id": "b7f8de4f-d1be-48aa-bd9d-14daf548f290",
+              "name": "function",
+              "value": "={{ $json.function }}",
+              "type": "string"
+            },
+            {
+              "id": "bb7b1b1e-9282-4312-9a4e-51f1d51b2e0f",
+              "name": "allowConflict",
+              "value": "false",
+              "type": "string"
+            },
+            {
+              "id": "17c517fd-7f11-4d7d-a99f-1b80ee37eef0",
+              "name": "iCalUID",
+              "value": "={{ $json.iCalUID.replaceAll('\\n','') }}",
+              "type": "string"
+            },
+            {
+              "id": "4d817757-7eed-47ee-a137-e0342cd32747",
+              "name": "phone",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "02136262-abd1-48c0-801f-b102f4d4b961",
+              "name": "event_id",
+              "value": "={{ $json.event_id }}",
+              "type": "string"
+            },
+            {
+              "id": "33e2e568-dae2-4240-a730-3996d9afa72e",
+              "name": "date_slots",
+              "value": "={{ $json.date_slots }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -8720,
+        -2160
+      ],
+      "id": "92729d0b-e74e-46db-a79b-13d9970f6205",
+      "name": "Config"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.function }}",
+                    "rightValue": "new",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "105f7b9c-2fe1-4d88-bc0b-b50ce0a8ebda"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "new"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ab0e12c3-bf1b-42b2-bd81-13ac1448bd1f",
+                    "leftValue": "={{ $json.function }}",
+                    "rightValue": "list",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "list"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e11a96ad-f187-4120-aa00-0d328ec236e9",
+                    "leftValue": "={{ $json.function }}",
+                    "rightValue": "slots",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "slots"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "50cf11ff-9ee8-4027-bc48-3b9a9393fce6",
+                    "leftValue": "={{ $json.function }}",
+                    "rightValue": "delete_only",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delete_only"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6800d520-eda8-4095-a992-63550a9d53cd",
+                    "leftValue": "={{ $json.function }}",
+                    "rightValue": "delete_all",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "delete_all"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "1e490094-7829-4f79-940f-b7fd928676c9",
+                    "leftValue": "={{ $json.function }}",
+                    "rightValue": "update",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "update"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -6816,
+        -2208
+      ],
+      "id": "f2610f19-1d70-4978-b0d5-d36a8ac98a5c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('Start').first().json.iCalUID }}",
+          "mode": "id"
+        },
+        "timeMin": "={{ $json.startDate.toDateTime() }}",
+        "timeMax": "={{ $json.startDate.toDateTime().plus(1,'hour') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -6160,
+        -2144
+      ],
+      "id": "cab191f9-2750-42dd-a66a-3c928dc8d461",
+      "name": "Disponível - Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EQoXX37xEzsgZxEC",
+          "name": "Autobot Main"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json.iCalUID }}",
+          "mode": "id"
+        },
+        "limit": 5,
+        "timeMax": "={{ $now.plus({ week: 2 }) }}",
+        "options": {
+          "query": "={{ $('Config').item.json.phone || $('Config').item.json.name  }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -8240,
+        -880
+      ],
+      "id": "28bd6a6b-9187-4020-94c7-2ca1a8aaad1b",
+      "name": "List - Google Calendar",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EQoXX37xEzsgZxEC",
+          "name": "Autobot Main"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -4064,
+        -1920
+      ],
+      "id": "82df7661-0a13-48e0-bc05-0033d034f915",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d7c5786-28c2-486c-b898-107d12505c2d",
+              "name": "error",
+              "value": "O horário solicitado não está disponível",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4832,
+        -1968
+      ],
+      "id": "4fb723d3-f996-481f-a1e8-52e70e189b68",
+      "name": "SetMessage"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "17b233b9-b5d5-4950-9b2d-e02f0dbdc5bf",
+              "leftValue": "={{ $('Config').item.json.allowConflict }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -5680,
+        -1920
+      ],
+      "id": "e9dabdb5-35fe-4b9c-9a4b-75df6624a81e",
+      "name": "AllowConflit"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "17b233b9-b5d5-4950-9b2d-e02f0dbdc5bf",
+              "leftValue": "={{ $json.available }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -5680,
+        -2144
+      ],
+      "id": "fb43d607-4725-45ce-8daf-f7e45db0149b",
+      "name": "Disponible"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -7824,
+        -864
+      ],
+      "id": "b3b22a3e-631f-4127-95c8-097cb509a86a",
+      "name": "Wait",
+      "webhookId": "dce63d7d-0bb0-4fd3-b3a0-e2ef70f9d5f2"
+    },
+    {
+      "parameters": {
+        "jsCode": "return { \n'response':JSON.stringify($input.all().map(x =>x.json))\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3072,
+        -1872
+      ],
+      "id": "fc57766d-2ee6-43a9-8b6f-aff2f9b43c9a",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -7856,
+        -1552
+      ],
+      "id": "2eb92215-686f-407d-9bf4-cb20f97c14b8",
+      "name": "LoopIDs",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json.organizer.email }}",
+          "mode": "id"
+        },
+        "eventId": "={{$json.id}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -3808,
+        -512
+      ],
+      "id": "01604ba3-6e91-42cc-97e1-20b9ff1beb43",
+      "name": "Delete - Google Calendar",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EQoXX37xEzsgZxEC",
+          "name": "Autobot Main"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -4128,
+        -944
+      ],
+      "id": "3671b447-04ec-4998-96a2-f949cd49db39",
+      "name": "LoopDelete"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3280,
+        -272
+      ],
+      "id": "aff78273-37ce-4884-8d91-adc715d4dcd0",
+      "name": "Wait1",
+      "webhookId": "9d336a1e-bb7c-48af-987e-305315ece150"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d7c5786-28c2-486c-b898-107d12505c2d",
+              "name": "msg",
+              "value": "Processo concluído",
+              "type": "string"
+            },
+            {
+              "id": "5df18b31-90b2-4297-b89f-c1a756eeb4a5",
+              "name": "error",
+              "value": "={{ $json.error }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3200,
+        -944
+      ],
+      "id": "051fdb98-7544-480d-8e5a-93cf13fe9ab4",
+      "name": "SetMessage1",
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json.iCalUID }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $json.event_id }}",
+        "updateFields": {
+          "end": "={{ DateTime.fromISO($json.date_slots, { zone: 'America/Sao_Paulo' }).plus({ hours: 1 }).toISO() }}",
+          "start": "={{ DateTime.fromISO($json.date_slots, { zone: 'America/Sao_Paulo' }).toISO() }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -6160,
+        -272
+      ],
+      "id": "90638ebc-5809-4680-9928-c832a050ff93",
+      "name": "Update - Google Calendar",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EQoXX37xEzsgZxEC",
+          "name": "Autobot Main"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "numberInputs": 10
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -3632,
+        -1568
+      ],
+      "id": "80d635c2-eaa2-4823-900b-b600d1ecd289",
+      "name": "Merge1",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Busca EVENTOS do usuário\n",
+        "height": 1080,
+        "width": 2060,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8928,
+        -1648
+      ],
+      "id": "f1c89210-a7af-418d-ae97-b95dc1ec9546",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Cria um EVENTOS do usuário\n",
+        "height": 620,
+        "width": 3420,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6528,
+        -2272
+      ],
+      "id": "75bebd31-628e-4287-bc63-c2b42999e5e6",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Config').item.json.function }}",
+                    "rightValue": "list",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "335635fa-b958-42f3-86c5-76fbfd33ff58"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "39a4a6e7-d32f-4315-a41b-1f241b6da43f",
+                    "leftValue": "={{ $('Config').item.json.function }}",
+                    "rightValue": "delete_all",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -7504,
+        -1568
+      ],
+      "id": "d8ea63a4-149f-443c-a066-7f8be67bf469",
+      "name": "FunctionSelect",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d7c5786-28c2-486c-b898-107d12505c2d",
+              "name": "msg",
+              "value": "=Evento atualizado !",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4960,
+        -48
+      ],
+      "id": "ce25b715-79f5-41a7-b9b4-4c0a1b0b4ff6",
+      "name": "SetMessage4",
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d7c5786-28c2-486c-b898-107d12505c2d",
+              "name": "msg",
+              "value": "=Não consegui atualizar o evento : {{ $('Config').item.json.event_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4992,
+        416
+      ],
+      "id": "cac5f67d-3699-409d-96f2-417330812c2a",
+      "name": "SetMessage5",
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Apaga TODOS EVENTOS do usuário\n",
+        "height": 1060,
+        "width": 1600,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4720,
+        -1040
+      ],
+      "id": "4ad037b7-ac80-4229-b6b8-e1ceea16d9d3",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Update um EVENTOS do usuário\n",
+        "height": 1100,
+        "width": 1460,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6528,
+        -448
+      ],
+      "id": "eb8f4a30-f75f-4920-896d-fe3431504626",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -8096,
+        176
+      ],
+      "id": "45ae6aa8-8803-4b23-896f-597f5cbd13f6",
+      "name": "Wait2",
+      "webhookId": "dce63d7d-0bb0-4fd3-b3a0-e2ef70f9d5f2"
+    },
+    {
+      "parameters": {
+        "content": "## Busca SLOTS por dia\n",
+        "height": 1120,
+        "width": 2080,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8944,
+        -528
+      ],
+      "id": "3fcb7a44-7a16-4444-a0de-a715ededdf6d",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('LoopOverTimes').item.json.iCalUID }}",
+          "mode": "id"
+        },
+        "timeMin": "={{ $json.start_time.toDateTime().toLocal() }}",
+        "timeMax": "={{ $json.start_time.toDateTime().plus(1,'hour') }}",
+        "options": {
+          "outputFormat": "availability"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -7824,
+        -80
+      ],
+      "id": "5234183b-e58d-4d58-81e3-5e3dd344e990",
+      "name": "Disponível - Google Calendar1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EQoXX37xEzsgZxEC",
+          "name": "Autobot Main"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ca2bd8ea-2267-47ba-bb16-0ee7a71a50d9",
+              "name": "start_time",
+              "value": "={{`${$('Start').first().json.date_slots}T${$json.start}:00`\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -8128,
+        -112
+      ],
+      "id": "bb4466ed-8e17-4f31-b248-909454608edd",
+      "name": "SetDataTime"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Definir horário de início e fim\nconst startHour = 8; // 08:00\nconst endHour = 18;  // 18:00\n// Definir horário do intervalo de almoço\nconst lunchStartHour = 12; // 12:00\nconst lunchEndHour = 14;   // 14:00\nconst timeSlots = [];\nconst iCalUID = $('Start').first().json.iCalUID;\nconst dateSlot = $('Start').first().json.date_slots; // Recebendo a data do slot\n// Obter a data e hora atuais\nconst now = new Date();\nconst currentDate = now.toISOString().split('T')[0]; // Formato YYYY-MM-DD\nconst currentHour = now.getHours();\nconst currentMinute = now.getMinutes();\n// Verificar se a data do slot é a data atual\nconst isToday = dateSlot === currentDate;\n// Gerar intervalos de 1 hora, excluindo o intervalo de almoço\nfor (let hour = startHour; hour < endHour; hour++) {\n  // Pular os horários de almoço\n  if (hour >= lunchStartHour && hour < lunchEndHour) {\n    continue; // Pula este horário e vai para o próximo\n  }\n  \n  // Se não for hoje, incluir todos os horários (exceto almoço)\n  // Se for hoje, incluir apenas horários futuros (exceto almoço)\n  if (!isToday || hour > currentHour || (hour === currentHour && currentMinute === 0)) {\n    const startTime = `${hour.toString().padStart(2, '0')}:00`;\n    const endTime = `${(hour + 1).toString().padStart(2, '0')}:00`;\n    \n    timeSlots.push({\n      start: startTime,\n      end: endTime,\n      date: dateSlot,\n      iCalUID: iCalUID\n    });\n  }\n}\n// Retornar os dados no formato esperado pelo n8n\nreturn timeSlots.map(slot => ({ json: slot }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8544,
+        -368
+      ],
+      "id": "53a04442-cbc9-4fda-a837-bd8bf95ef20b",
+      "name": "MakeTimes",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -8560,
+        -128
+      ],
+      "id": "3b8fcef7-518a-4b52-a91b-4a27c6b436b8",
+      "name": "LoopOverTimes",
+      "executeOnce": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item.json;\nconst available = item.available;\nconst datetimeStr = $('SetDataTime').first().json.start_time;\n\nreturn [{\n  json: {\n    datetime: datetimeStr,\n    available: available\n  }\n}];\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7440,
+        -112
+      ],
+      "id": "d2624947-f922-467a-8251-49e9faf953f5",
+      "name": "FormatOut",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d7c5786-28c2-486c-b898-107d12505c2d",
+              "name": "msg",
+              "value": "=Os horários disponíveis para o dia: {{ $('Start').first().json.date_slots }}\nsao: \n{{ $('LoopOverTimes').all().map(item => item.json.toJsonString()) }}\n\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -8128,
+        -368
+      ],
+      "id": "6d6348d7-1e48-485f-8bcc-e63cdb2ee6cb",
+      "name": "SetMessage6",
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "# Funções\n\n## - list\n## - slots\n## - new\n## - delete_all\n## - delete_only\n## - update\n",
+        "height": 1080,
+        "width": 460,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -9856,
+        -2192
+      ],
+      "id": "c08a4f55-88fc-4f59-8bc6-418fef04432b",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "professionals",
+        "limit": 10,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "active",
+              "condition": "eq",
+              "keyValue": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -8176,
+        -1552
+      ],
+      "id": "087ffc8b-72b6-48d9-8363-9c87075d750e",
+      "name": "ProfissioanaisSupabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "FDFIP1gfUCWJDsnM",
+          "name": "Autobot IA"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        -8480,
+        -1552
+      ],
+      "id": "799f6906-9f93-4120-9048-dc990932a73f",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "content": "## Apaga EVENTOS do usuário\n",
+        "height": 620,
+        "width": 1580,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -4704,
+        80
+      ],
+      "id": "6d651f55-d503-4edf-80cc-59112aa0bd1e",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d7c5786-28c2-486c-b898-107d12505c2d",
+              "name": "msg",
+              "value": "Evento cancelado com sucesso",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3264,
+        192
+      ],
+      "id": "d0b2481d-e74b-405c-a0e5-e922079d1c99",
+      "name": "SetMessage7",
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('Config').item.json.iCalUID }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $('Config').item.json.event_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -4160,
+        160
+      ],
+      "id": "8bcdd85a-9096-46da-976e-a3cdf2febc55",
+      "name": "Delete - Google Calendar1",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EQoXX37xEzsgZxEC",
+          "name": "Autobot Main"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item.json;\nconst available = item.available;\nconst datetimeStr = $('SetDataTime').first().json.start_time;\n\nreturn [{\n  json: {\n    datetime: '',\n    available: false,\n    error:'iCalUID não localizado'\n  }\n}];\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7424,
+        176
+      ],
+      "id": "c61d1f4e-b620-4aab-b741-77110fb652aa",
+      "name": "FormatErrorOut",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d7c5786-28c2-486c-b898-107d12505c2d",
+              "name": "msg",
+              "value": "Evento não localizado",
+              "type": "string"
+            },
+            {
+              "id": "5df18b31-90b2-4297-b89f-c1a756eeb4a5",
+              "name": "error",
+              "value": "={{ $json.error }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3248,
+        432
+      ],
+      "id": "be2c0b53-7552-48f6-a1b7-77763df16a40",
+      "name": "SetMessage8",
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1a9a5ce4-9049-4944-9743-9fe9d976e1cb",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -7504,
+        -1232
+      ],
+      "id": "f9e79bd0-4cf4-4f25-8bf6-83e8941d1c31",
+      "name": "Filter",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Filter').item.json.isEmpty() }}",
+                    "rightValue": 0,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    },
+                    "id": "44171f5d-827d-4b58-8ead-a0b13efb1a2c"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3257d663-6824-4f74-b3ce-65d284693899",
+                    "leftValue": "={{ $('Filter').item.json.isEmpty() }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -7504,
+        -848
+      ],
+      "id": "23308ed2-4c54-404c-bf39-1dc5c0cf844b",
+      "name": "Switch1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d7c5786-28c2-486c-b898-107d12505c2d",
+              "name": "msg",
+              "value": "=Não encontrei evento para cancelar",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -7024,
+        -1232
+      ],
+      "id": "604e7255-d382-44cb-9f44-97f97ac1ffc3",
+      "name": "SetMessage9",
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6d7c5786-28c2-486c-b898-107d12505c2d",
+              "name": "error",
+              "value": "=iCalUID: {{ $json.error }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4832,
+        -1792
+      ],
+      "id": "aac75d90-0b6e-4892-a976-c4cedfad7678",
+      "name": "SetMessage2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "kyv9FW3d7DccRISE",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/kyv9FW3d7DccRISE",
+          "cachedResultName": "ENVIA EMAIL (OFC)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $('Start').item.json.name }}",
+            "email": "={{ $('Start').item.json.email }}",
+            "doctor_name": "={{ $json.organizer.displayName }}",
+            "date": "={{ new Date($(\"Google Calendar\").item.json.start.dateTime).toLocaleDateString(\"pt-BR\") }}",
+            "time": "={{ new Date($(\"Google Calendar\").item.json.start.dateTime).toLocaleTimeString(\"pt-BR\", { hour: \"2-digit\", minute: \"2-digit\" }) }}",
+            "location": "Endereço: Rua das Palmeiras, 125 – Centro, São Paulo – SP| CEP: 01025-000 Referência: Próximo à estação República do Metrô",
+            "event_id": "={{ $('Config').item.json.event_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "doctor_name",
+              "displayName": "doctor_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -4400,
+        -2160
+      ],
+      "id": "3c9c2a96-f69f-46c4-ac9d-715ea6c7db4a",
+      "name": "Envia_Email_Confirmacao",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "kyv9FW3d7DccRISE",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/kyv9FW3d7DccRISE",
+          "cachedResultName": "ENVIA EMAIL (OFC)"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $('Start').item.json.name }}",
+            "email": "={{ $('Start').item.json.email }}",
+            "doctor_name": "={{ $json.organizer.displayName }}",
+            "date": "={{ new Date($json.start.dateTime).toLocaleDateString('pt-BR') }}",
+            "time": "={{ \n  new Date($json.start.dateTime).toLocaleTimeString('pt-BR', { hour: \"2-digit\", minute: \"2-digit\" })\n  + \" às \" +\n  new Date($json.end.dateTime).toLocaleTimeString('pt-BR', { hour: \"2-digit\", minute: \"2-digit\" })\n}}",
+            "location": "Endereço: Rua das Palmeiras, 125 – Centro, São Paulo – SP| CEP: 01025-000 Referência: Próximo à estação República do Metrô",
+            "event_id": "={{ $('Config').item.json.event_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "doctor_name",
+              "displayName": "doctor_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -5520,
+        -176
+      ],
+      "id": "693689e2-6ac5-45b5-9be1-3862aff59a56",
+      "name": "Envia_Email_Confirmacao1",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {
+    "Start": [
+      {
+        "json": {
+          "date_slots": "2025-11-17T11:00:00",
+          "iCalUID": "f42fa520a6361e2865c762ef986122bd1041192cde2b3fcc4f3d1e6bc0d7d53c@group.calendar.google.com",
+          "email": "liderlira009@outlook.com",
+          "startDate": null,
+          "duration": "60",
+          "observacao": "Consulta para avaliação/extração de siso.",
+          "local": "Clínica Smile",
+          "function": "update",
+          "phone": "5511977426056",
+          "name": "josé",
+          "event_id": "reujkhkp2n9efohofr4qfmnj60"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar": {
+      "main": [
+        [
+          {
+            "node": "Envia_Email_Confirmacao",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Disponível - Google Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "MakeTimes",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete - Google Calendar1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update - Google Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disponível - Google Calendar": {
+      "main": [
+        [
+          {
+            "node": "Disponible",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SetMessage2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetMessage": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "AllowConflit": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SetMessage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disponible": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AllowConflit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List - Google Calendar": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "LoopIDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LoopIDs": {
+      "main": [
+        [
+          {
+            "node": "FunctionSelect",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List - Google Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LoopDelete": {
+      "main": [
+        [
+          {
+            "node": "SetMessage1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete - Google Calendar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete - Google Calendar": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "LoopDelete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetMessage1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FunctionSelect": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetMessage4": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Update - Google Calendar": {
+      "main": [
+        [
+          {
+            "node": "Envia_Email_Confirmacao1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SetMessage5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetMessage5": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "LoopOverTimes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disponível - Google Calendar1": {
+      "main": [
+        [
+          {
+            "node": "FormatOut",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FormatErrorOut",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetDataTime": {
+      "main": [
+        [
+          {
+            "node": "Disponível - Google Calendar1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MakeTimes": {
+      "main": [
+        [
+          {
+            "node": "LoopOverTimes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LoopOverTimes": {
+      "main": [
+        [
+          {
+            "node": "SetMessage6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SetDataTime",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FormatOut": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetMessage6": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "ProfissioanaisSupabase": {
+      "main": [
+        [
+          {
+            "node": "LoopIDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "ProfissioanaisSupabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetMessage7": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "Delete - Google Calendar1": {
+      "main": [
+        [
+          {
+            "node": "SetMessage7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SetMessage8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FormatErrorOut": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetMessage8": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 8
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "LoopDelete",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SetMessage9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetMessage9": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 9
+          }
+        ]
+      ]
+    },
+    "SetMessage2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        []
+      ]
+    },
+    "Code3": {
+      "main": [
+        []
+      ]
+    },
+    "Envia_Email_Confirmacao": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Envia_Email_Confirmacao1": {
+      "main": [
+        [
+          {
+            "node": "SetMessage4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ff1d9fd7-0508-458a-9d10-3cc58f9d3597",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cd73efdefd890ac4bc33e0de8679e68f96bddd2bd52def5dc65e9258f90a39d7"
+  },
+  "id": "9axZ76SRZMeBtImH",
+  "tags": [
+    {
+      "updatedAt": "2025-11-08T13:54:18.743Z",
+      "createdAt": "2025-11-08T13:54:18.743Z",
+      "id": "RFRlLXIRt0SeVFm8",
+      "name": "agendamento-mcp"
+    }
+  ]
+}

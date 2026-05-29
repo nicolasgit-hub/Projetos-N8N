@@ -1,0 +1,95 @@
+{
+  "name": "list_professionals",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "professionals",
+        "limit": 5
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "02ad96a5-bbeb-4569-852b-c6d4a941da65",
+      "name": "ListProfissioanaisSupabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "FDFIP1gfUCWJDsnM",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return { \n'response':JSON.stringify($input.all().map(x =>x.json))\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        144
+      ],
+      "id": "4f5eef5a-37b3-429a-8c82-3392a9d56f19",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -496,
+        80
+      ],
+      "id": "c64f9dee-9917-4f1c-9db0-9adb628df801",
+      "name": "Start"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "ListProfissioanaisSupabase": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "ListProfissioanaisSupabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4519af81-68d4-461d-94ee-b288f8c22c51",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cd73efdefd890ac4bc33e0de8679e68f96bddd2bd52def5dc65e9258f90a39d7"
+  },
+  "id": "beBNaXAzAD1YtEKA",
+  "tags": [
+    {
+      "updatedAt": "2025-11-08T13:54:18.743Z",
+      "createdAt": "2025-11-08T13:54:18.743Z",
+      "id": "RFRlLXIRt0SeVFm8",
+      "name": "agendamento-mcp"
+    }
+  ]
+}

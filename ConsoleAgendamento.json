@@ -1,0 +1,1124 @@
+{
+  "name": "ConsoleAgendamento",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        -224
+      ],
+      "id": "8b2b86bb-1b37-4eb1-84d5-4bf9a57ec2eb",
+      "name": "When chat message received",
+      "webhookId": "6193e011-b0a0-456f-adbc-8b57efcb1738"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# 🧠 Agente de Agendamento de Atendimento\n\n## Função\nVocê é um agente de atendimento. Sua função é agendar atendimentos entre clientes e profissionais\ndisponíveis, respeitando as regras e dados fornecidos pela API e conforme a disponibilidade dos\nprofissionais.\n\n## Dias de Funcionamento da Empresa\nA empresa realiza atendimentos apenas de **segunda a sexta-feira**, durante o horário comercial.\n**Não agende atendimentos aos sábados, domingos ou feriados.**\n\n## Regras Importantes\n- Nunca crie um valores para os campos ID ou `iCalUID`. Utilize apenas os valores fornecidos na lista\nde profissionais.\n- O título do evento deve conter o nome do cliente e o nome da equipe ou profissional.\n  Exemplo: Cliente Joaquim | Equipe de Vendas\n- Nunca mostre dados de contato (telefone ou e-mail) dos profissionais.\n- Antes de agendar um horário, sempre consulte a disponibilidade do profissional (via `list_slots com o iCalUID`).\n- Nunca utilize o telefone ou e-mail do profissional para cancelar eventos.\n\n## Fluxo de Atendimento\n\n### 🗓️ Para agendar um novo atendimento:\n1. Pergunte com quem o cliente deseja falar. Entenda o problema e sugira o profissional\nou equipe mais indicada.\n2. Pergunte o dia e horário desejado, verifique a disponibilidade e sugira alternativas se necessário.\n3. Solicite o nome completo e telefone de contato do cliente.\n4. Agende o horário desejado utilizando o `iCalUID` do profissional.\n\n### 🔁 Para atualizar um agendamento existente:\n1. Liste todos os eventos do cliente pelo telefone informado.\n2. Localize o `event_id` correspondente.\n3. Verifique os horários disponíveis (`slots`) para a nova data.\n4. Pergunte o novo horário desejado.\n5. Atualize o evento usando o `id` do evento.\n   ⚠️ O formato do `id` é semelhante a: oeinnvtgfsrutk57ttghg55tr8\n\n### ❌ Para cancelar apenas um agendamento de um cliente:\n1. Liste todos os eventos do cliente pelo telefone informado.\n2. Localize o `id` correspondente ao evento que será cancelado.\n3. Localize o `iCalUID` correspondente ao profissional do evento que será cancelado.\n   'delete_only_events'iCalUID\n\n### ❌ Para cancelar todos os agendamentos de um cliente:\n1. Use a ferramenta 'delete_all_events'\n2. Passe como parâmentro o telefone e email do cliente.\n   ⚠️ Não use e-mail ou telefone do profissional para cancelar.\n\n## Variáveis Úteis\n- Data de hoje:\n  {{ $now.format('yyyy-MM-dd')}} | {{ $now.weekdayLong }}\n\n- Data de amanhã:\n  {{ $now.plus(1,'day').format('yyyy-MM-dd')}} | {{ $now.plus(1,'day').weekdayLong }}\n- Hora atual:\n  {{ $now.format('HH:mm:ss')}}\n- Profissionais disponíveis:\n{{ $json.profissionais }}\n\n## Exemplos\n\n### Exemplo de Título de Evento:\nCliente Marina Silva | Suporte Técnico\n\n### Exemplo de Resposta sobre Disponibilidade:\n\"Infelizmente, o horário das 14h não está disponível na quarta-feira. Tenho disponibilidade às 13h ou 15h. Qual prefere?\"\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1408,
+        -224
+      ],
+      "id": "9ef81433-951d-4dbb-b6f0-28cce2bb3e2e",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1056,
+        64
+      ],
+      "id": "01566d67-93e0-4ec9-ba87-3b07fcda46fb",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "za9spDATxkbquJKD",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1232,
+        64
+      ],
+      "id": "e7b5accf-f699-4a8a-b41f-3bbb52a8d62d",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "name": "list_slots",
+        "description": "Função que lista os slots de tempo para um determinado profissional, ele recebe uma data date_slots, ID da agenda do profissional List_iCalUID",
+        "workflowId": {
+          "__rl": true,
+          "value": "7rX5mUtiayR25GmP",
+          "mode": "list",
+          "cachedResultName": "ToolsEventGoogleCalendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date_slots": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date_slots', `Dara para verificação dos slots disponíveis com formato YYYY-MM-DD`, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', `Email do cliente`, 'string') }}",
+            "startDate": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('startDate', `Data inicial da reunião`, 'string') }}",
+            "duration": "1",
+            "function": "slots",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', `Telefone do cliente`, 'string') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', `Nome do cliente`, 'string') }}",
+            "local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('local', ``, 'string') }}",
+            "observacao": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('observacao', ``, 'string') }}",
+            "iCalUID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('iCalUID', `iCalUID da agenda do profissional que devemos consultar os SLOTs de tempo disponíveis para agendamento`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date_slots",
+              "displayName": "date_slots",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "iCalUID",
+              "displayName": "iCalUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "startDate",
+              "displayName": "startDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "observacao",
+              "displayName": "observacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "local",
+              "displayName": "local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "function",
+              "displayName": "function",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1536,
+        48
+      ],
+      "id": "96f81494-cee0-4f25-9c0c-03341badbecb",
+      "name": "list_slots"
+    },
+    {
+      "parameters": {
+        "name": "new_event",
+        "description": "Função que cria um novo evento (reunião) para o profissional com o ID iCalUID e dados do cliente",
+        "workflowId": {
+          "__rl": true,
+          "value": "7rX5mUtiayR25GmP",
+          "mode": "list",
+          "cachedResultName": "ToolsEventGoogleCalendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date_slots": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date_slots', `Dara para verificação dos slots disponíveis com formato YYYY-MM-DD`, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', `Email do cliente`, 'string') }}",
+            "startDate": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('startDate', `Data e hora inicial do evento(reunião)`, 'string') }}",
+            "duration": "1",
+            "function": "new",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', `Telefone do cliente`, 'string') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', `Nome do cliente`, 'string') }}",
+            "event_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('event_id', `Não se aplica a esta função`, 'string') }}",
+            "local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('local', `Local onde será o evento`, 'string') }}",
+            "observacao": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('observacao', `Observação sobre o cliente`, 'string') }}",
+            "iCalUID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('iCalUID', `iCalUID da agenda do profissional que devemos criar o agendamento`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date_slots",
+              "displayName": "date_slots",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "iCalUID",
+              "displayName": "iCalUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "startDate",
+              "displayName": "startDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "observacao",
+              "displayName": "observacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "local",
+              "displayName": "local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "function",
+              "displayName": "function",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1712,
+        48
+      ],
+      "id": "a5bc5fa8-c9e7-4d34-a907-42cb9080413e",
+      "name": "new_event"
+    },
+    {
+      "parameters": {
+        "name": "delete_all_events",
+        "description": "Função que deleta todos os eventos (reunião) para o profissional com o iCalUID e com um determinado telefone (phone) ou email de um cliente",
+        "workflowId": {
+          "__rl": true,
+          "value": "7rX5mUtiayR25GmP",
+          "mode": "list",
+          "cachedResultName": "ToolsEventGoogleCalendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date_slots": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date_slots', `Dara para verificação dos slots disponíveis com formato YYYY-MM-DD`, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', `Email do cliente`, 'string') }}",
+            "startDate": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('startDate', `Data e hora inicial do evento(reunião)`, 'string') }}",
+            "function": "delete_all",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', `Telefone do cliente`, 'string') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', `Nome do cliente`, 'string') }}",
+            "event_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('event_id', `Não se aplica a esta função`, 'string') }}",
+            "local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('local', `Local onde será o evento`, 'string') }}",
+            "observacao": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('observacao', `Observação sobre o cliente`, 'string') }}",
+            "iCalUID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('iCalUID', `iCalUID da agenda do profissional que devemos apagar/cancelar o agendamento`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date_slots",
+              "displayName": "date_slots",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "iCalUID",
+              "displayName": "iCalUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "startDate",
+              "displayName": "startDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "observacao",
+              "displayName": "observacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "local",
+              "displayName": "local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "function",
+              "displayName": "function",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        2032,
+        48
+      ],
+      "id": "19b74a6a-eda0-4c7e-aa43-1855dfe4dd90",
+      "name": "delete_all_events"
+    },
+    {
+      "parameters": {
+        "name": "list_my_events",
+        "description": "Função que lista um ou vários eventos (reuniões) de um cliente com um determinado telefone (phone) com qualquer profissional disponível",
+        "workflowId": {
+          "__rl": true,
+          "value": "7rX5mUtiayR25GmP",
+          "mode": "list",
+          "cachedResultName": "ToolsEventGoogleCalendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', `Email do cliente`, 'string') }}",
+            "function": "list",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', `Telefone do cliente`, 'string') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', `Nome do cliente`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date_slots",
+              "displayName": "date_slots",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "iCalUID",
+              "displayName": "iCalUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "startDate",
+              "displayName": "startDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "observacao",
+              "displayName": "observacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "local",
+              "displayName": "local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "function",
+              "displayName": "function",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1872,
+        48
+      ],
+      "id": "fc545c75-e4d0-4f32-bba4-2f97bdf925c9",
+      "name": "list_my_events"
+    },
+    {
+      "parameters": {
+        "name": "delete_only_event",
+        "description": "Função que deleta um eventos (reunião) para o profissional com o ID do evento e iCalUID do profissional",
+        "workflowId": {
+          "__rl": true,
+          "value": "7rX5mUtiayR25GmP",
+          "mode": "list",
+          "cachedResultName": "ToolsEventGoogleCalendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', `Email do cliente`, 'string') }}",
+            "function": "delete_only",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', `Telefone do cliente`, 'string') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', `Nome do cliente`, 'string') }}",
+            "event_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('event_id', `ID do evento que será apagado`, 'string') }}",
+            "local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('local', `Local onde será o evento`, 'string') }}",
+            "observacao": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('observacao', `Observação sobre o cliente`, 'string') }}",
+            "iCalUID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('iCalUID', `iCalUID da agenda do profissional que devemos apagar/cancelar o agendamento`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date_slots",
+              "displayName": "date_slots",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "iCalUID",
+              "displayName": "iCalUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "startDate",
+              "displayName": "startDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "observacao",
+              "displayName": "observacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "local",
+              "displayName": "local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "function",
+              "displayName": "function",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        2192,
+        48
+      ],
+      "id": "31bb4a49-abe2-48c6-9f28-53f348a2ecf5",
+      "name": "delete_only_event"
+    },
+    {
+      "parameters": {
+        "name": "update_event",
+        "description": "Função que atualiza a data um evento (reunião) para o profissional com o ID do evento e iCalUID do profissional",
+        "workflowId": {
+          "__rl": true,
+          "value": "7rX5mUtiayR25GmP",
+          "mode": "list",
+          "cachedResultName": "ToolsEventGoogleCalendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', `Email do cliente`, 'string') }}",
+            "function": "update",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', `Telefone do cliente`, 'string') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', `Nome do cliente`, 'string') }}",
+            "event_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('event_id', `ID do evento que será atualizado`, 'string') }}",
+            "local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('local', `Local onde será o evento`, 'string') }}",
+            "observacao": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('observacao', `Observação sobre o cliente`, 'string') }}",
+            "iCalUID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('iCalUID', `iCalUID da agenda do profissional que devemos apagar/cancelar o agendamento`, 'string') }}",
+            "date_slots": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date_slots', `Nova data para o evento informado pelo cliente`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date_slots",
+              "displayName": "date_slots",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "iCalUID",
+              "displayName": "iCalUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "startDate",
+              "displayName": "startDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "observacao",
+              "displayName": "observacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "local",
+              "displayName": "local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "function",
+              "displayName": "function",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        2352,
+        48
+      ],
+      "id": "33e734ed-bdc7-4e0c-ac03-e8e3217650ec",
+      "name": "update_event"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "professionals",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "active",
+              "condition": "eq",
+              "keyValue": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -224
+      ],
+      "id": "e23d4e7e-5c65-49f4-a4f4-cb72dd8fb064",
+      "name": "ProfessionalsSupabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "FDFIP1gfUCWJDsnM",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d23b1bc7-3ed9-4d80-8740-674c94821a70",
+              "name": "chatInput",
+              "value": "={{ $('When chat message received').item.json.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "1db63104-e993-4697-8b98-627ca5dc2f3b",
+              "name": "sessionId",
+              "value": "={{ $('When chat message received').item.json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "1751fb9f-acd4-4595-acab-b55ff13d7558",
+              "name": "profissionais",
+              "value": "={{ $('ProfessionalsSupabase').all().map(item => item.json).toJsonString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1088,
+        -224
+      ],
+      "id": "2ef2318c-46d6-4578-bad2-06e7fdbc1bee",
+      "name": "Config"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "ProfessionalsSupabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "list_slots": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "new_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_all_events": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "list_my_events": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_only_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ProfessionalsSupabase": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7db6bb1b-8a7d-4488-a93b-1a27a8fe03ab",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cd73efdefd890ac4bc33e0de8679e68f96bddd2bd52def5dc65e9258f90a39d7"
+  },
+  "id": "rKNCKQUGdApZrx3i",
+  "tags": [
+    {
+      "updatedAt": "2025-11-08T13:54:18.743Z",
+      "createdAt": "2025-11-08T13:54:18.743Z",
+      "id": "RFRlLXIRt0SeVFm8",
+      "name": "agendamento-mcp"
+    }
+  ]
+}

@@ -1,0 +1,2255 @@
+{
+  "name": "FOLLOW UP (OFC)",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        -128
+      ],
+      "id": "36649dda-1878-456a-a31a-ab569e6a9aa7",
+      "name": "When chat message received",
+      "webhookId": "6193e011-b0a0-456f-adbc-8b57efcb1738"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=# 🧠 Agente de Agendamento de Atendimento\n\n## Função\nVocê é um agente de atendimento. Sua função é agendar atendimentos entre clientes e profissionais\ndisponíveis, respeitando as regras e dados fornecidos pela API e conforme a disponibilidade dos\nprofissionais.\n\n## Dias de Funcionamento da Empresa\nA empresa realiza atendimentos apenas de **segunda a sexta-feira**, durante o horário comercial.\n**Não agende atendimentos aos sábados, domingos ou feriados.**\n\n## Regras Importantes\n- Nunca crie um valores para os campos ID ou `iCalUID`. Utilize apenas os valores fornecidos na lista\nde profissionais.\n- O título do evento deve conter o nome do cliente e o nome da equipe ou profissional.\n  Exemplo: Cliente Joaquim | Equipe de Vendas\n- Nunca mostre dados de contato (telefone ou e-mail) dos profissionais.\n- Antes de agendar um horário, sempre consulte a disponibilidade do profissional (via `list_slots com o iCalUID`).\n- Nunca utilize o telefone ou e-mail do profissional para cancelar eventos.\n\n## Fluxo de Atendimento\n\n### 🗓️ Para agendar um novo atendimento:\n1. Pergunte com quem o cliente deseja falar. Entenda o problema e sugira o profissional\nou equipe mais indicada.\n2. Pergunte o dia e horário desejado, verifique a disponibilidade e sugira alternativas se necessário.\n3. Solicite o nome completo e telefone de contato do cliente.\n4. Agende o horário desejado utilizando o `iCalUID` do profissional.\n\n### 🔁 Para atualizar um agendamento existente:\n1. Liste todos os eventos do cliente pelo telefone informado.\n2. Localize o `event_id` correspondente.\n3. Verifique os horários disponíveis (`slots`) para a nova data.\n4. Pergunte o novo horário desejado.\n5. Atualize o evento usando o `id` do evento.\n   ⚠️ O formato do `id` é semelhante a: oeinnvtgfsrutk57ttghg55tr8\n\n### ❌ Para cancelar apenas um agendamento de um cliente:\n1. Liste todos os eventos do cliente pelo telefone informado.\n2. Localize o `id` correspondente ao evento que será cancelado.\n3. Localize o `iCalUID` correspondente ao profissional do evento que será cancelado.\n   'delete_only_events'iCalUID\n\n### ❌ Para cancelar todos os agendamentos de um cliente:\n1. Use a ferramenta 'delete_all_events'\n2. Passe como parâmentro o telefone e email do cliente.\n   ⚠️ Não use e-mail ou telefone do profissional para cancelar.\n\n## Variáveis Úteis\n- Data de hoje:\n  {{ $now.format('yyyy-MM-dd')}} | {{ $now.weekdayLong }}\n\n- Data de amanhã:\n  {{ $now.plus(1,'day').format('yyyy-MM-dd')}} | {{ $now.plus(1,'day').weekdayLong }}\n- Hora atual:\n  {{ $now.format('HH:mm:ss')}}\n- Profissionais disponíveis:\n{{ $json.profissionais }}\n\n## Exemplos\n\n### Exemplo de Título de Evento:\nCliente Marina Silva | Suporte Técnico\n\n### Exemplo de Resposta sobre Disponibilidade:\n\"Infelizmente, o horário das 14h não está disponível na quarta-feira. Tenho disponibilidade às 13h ou 15h. Qual prefere?\"\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1200,
+        -128
+      ],
+      "id": "76b6d410-25fb-49ad-9af6-44fc7ba59da7",
+      "name": "AI Agent",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        848,
+        160
+      ],
+      "id": "17d0cfda-0206-4cd2-bdb3-f6d00ea0a35f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "za9spDATxkbquJKD",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        160
+      ],
+      "id": "01583860-1240-487a-af10-9818d5f1142c",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "name": "list_slots",
+        "description": "Função que lista os slots de tempo para um determinado profissional, ele recebe uma data date_slots, ID da agenda do profissional List_iCalUID",
+        "workflowId": {
+          "__rl": true,
+          "value": "7rX5mUtiayR25GmP",
+          "mode": "list",
+          "cachedResultName": "ToolsEventGoogleCalendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date_slots": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date_slots', `Dara para verificação dos slots disponíveis com formato YYYY-MM-DD`, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', `Email do cliente`, 'string') }}",
+            "startDate": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('startDate', `Data inicial da reunião`, 'string') }}",
+            "duration": "1",
+            "function": "slots",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', `Telefone do cliente`, 'string') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', `Nome do cliente`, 'string') }}",
+            "local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('local', ``, 'string') }}",
+            "observacao": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('observacao', ``, 'string') }}",
+            "iCalUID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('iCalUID', `iCalUID da agenda do profissional que devemos consultar os SLOTs de tempo disponíveis para agendamento`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date_slots",
+              "displayName": "date_slots",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "iCalUID",
+              "displayName": "iCalUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "startDate",
+              "displayName": "startDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "observacao",
+              "displayName": "observacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "local",
+              "displayName": "local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "function",
+              "displayName": "function",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1328,
+        144
+      ],
+      "id": "ee2bfb4a-3063-4716-b684-dd85ea76cbb2",
+      "name": "list_slots"
+    },
+    {
+      "parameters": {
+        "name": "new_event",
+        "description": "Função que cria um novo evento (reunião) para o profissional com o ID iCalUID e dados do cliente",
+        "workflowId": {
+          "__rl": true,
+          "value": "7rX5mUtiayR25GmP",
+          "mode": "list",
+          "cachedResultName": "ToolsEventGoogleCalendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date_slots": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date_slots', `Dara para verificação dos slots disponíveis com formato YYYY-MM-DD`, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', `Email do cliente`, 'string') }}",
+            "startDate": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('startDate', `Data e hora inicial do evento(reunião)`, 'string') }}",
+            "duration": "1",
+            "function": "new",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', `Telefone do cliente`, 'string') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', `Nome do cliente`, 'string') }}",
+            "event_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('event_id', `Não se aplica a esta função`, 'string') }}",
+            "local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('local', `Local onde será o evento`, 'string') }}",
+            "observacao": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('observacao', `Observação sobre o cliente`, 'string') }}",
+            "iCalUID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('iCalUID', `iCalUID da agenda do profissional que devemos criar o agendamento`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date_slots",
+              "displayName": "date_slots",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "iCalUID",
+              "displayName": "iCalUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "startDate",
+              "displayName": "startDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "observacao",
+              "displayName": "observacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "local",
+              "displayName": "local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "function",
+              "displayName": "function",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1504,
+        144
+      ],
+      "id": "eb94f87e-e3fb-4c2b-a899-b38b3b204605",
+      "name": "new_event"
+    },
+    {
+      "parameters": {
+        "name": "delete_all_events",
+        "description": "Função que deleta todos os eventos (reunião) para o profissional com o iCalUID e com um determinado telefone (phone) ou email de um cliente",
+        "workflowId": {
+          "__rl": true,
+          "value": "7rX5mUtiayR25GmP",
+          "mode": "list",
+          "cachedResultName": "ToolsEventGoogleCalendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date_slots": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date_slots', `Dara para verificação dos slots disponíveis com formato YYYY-MM-DD`, 'string') }}",
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', `Email do cliente`, 'string') }}",
+            "startDate": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('startDate', `Data e hora inicial do evento(reunião)`, 'string') }}",
+            "function": "delete_all",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', `Telefone do cliente`, 'string') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', `Nome do cliente`, 'string') }}",
+            "event_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('event_id', `Não se aplica a esta função`, 'string') }}",
+            "local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('local', `Local onde será o evento`, 'string') }}",
+            "observacao": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('observacao', `Observação sobre o cliente`, 'string') }}",
+            "iCalUID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('iCalUID', `iCalUID da agenda do profissional que devemos apagar/cancelar o agendamento`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date_slots",
+              "displayName": "date_slots",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "iCalUID",
+              "displayName": "iCalUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "startDate",
+              "displayName": "startDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "observacao",
+              "displayName": "observacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "local",
+              "displayName": "local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "function",
+              "displayName": "function",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1824,
+        144
+      ],
+      "id": "9d2cab2a-4d30-4044-9ea2-5d493d6da0f5",
+      "name": "delete_all_events"
+    },
+    {
+      "parameters": {
+        "name": "list_my_events",
+        "description": "Função que lista um ou vários eventos (reuniões) de um cliente com um determinado telefone (phone) com qualquer profissional disponível",
+        "workflowId": {
+          "__rl": true,
+          "value": "7rX5mUtiayR25GmP",
+          "mode": "list",
+          "cachedResultName": "ToolsEventGoogleCalendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', `Email do cliente`, 'string') }}",
+            "function": "list",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', `Telefone do cliente`, 'string') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', `Nome do cliente`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date_slots",
+              "displayName": "date_slots",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "iCalUID",
+              "displayName": "iCalUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "startDate",
+              "displayName": "startDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "observacao",
+              "displayName": "observacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "local",
+              "displayName": "local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "function",
+              "displayName": "function",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1664,
+        144
+      ],
+      "id": "43c982c9-7d26-4eea-84cd-e7b434a15a11",
+      "name": "list_my_events"
+    },
+    {
+      "parameters": {
+        "name": "delete_only_event",
+        "description": "Função que deleta um eventos (reunião) para o profissional com o ID do evento e iCalUID do profissional",
+        "workflowId": {
+          "__rl": true,
+          "value": "7rX5mUtiayR25GmP",
+          "mode": "list",
+          "cachedResultName": "ToolsEventGoogleCalendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', `Email do cliente`, 'string') }}",
+            "function": "delete_only",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', `Telefone do cliente`, 'string') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', `Nome do cliente`, 'string') }}",
+            "event_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('event_id', `ID do evento que será apagado`, 'string') }}",
+            "local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('local', `Local onde será o evento`, 'string') }}",
+            "observacao": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('observacao', `Observação sobre o cliente`, 'string') }}",
+            "iCalUID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('iCalUID', `iCalUID da agenda do profissional que devemos apagar/cancelar o agendamento`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date_slots",
+              "displayName": "date_slots",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "iCalUID",
+              "displayName": "iCalUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "startDate",
+              "displayName": "startDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "observacao",
+              "displayName": "observacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "local",
+              "displayName": "local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "function",
+              "displayName": "function",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1984,
+        144
+      ],
+      "id": "7bf74ccc-f292-4b3f-a429-b851f09e7bce",
+      "name": "delete_only_event"
+    },
+    {
+      "parameters": {
+        "name": "update_event",
+        "description": "Função que atualiza a data um evento (reunião) para o profissional com o ID do evento e iCalUID do profissional",
+        "workflowId": {
+          "__rl": true,
+          "value": "7rX5mUtiayR25GmP",
+          "mode": "list",
+          "cachedResultName": "ToolsEventGoogleCalendar"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('email', `Email do cliente`, 'string') }}",
+            "function": "update",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', `Telefone do cliente`, 'string') }}",
+            "name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('name', `Nome do cliente`, 'string') }}",
+            "event_id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('event_id', `ID do evento que será atualizado`, 'string') }}",
+            "local": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('local', `Local onde será o evento`, 'string') }}",
+            "observacao": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('observacao', `Observação sobre o cliente`, 'string') }}",
+            "iCalUID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('iCalUID', `iCalUID da agenda do profissional que devemos apagar/cancelar o agendamento`, 'string') }}",
+            "date_slots": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('date_slots', `Nova data para o evento informado pelo cliente`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "date_slots",
+              "displayName": "date_slots",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "iCalUID",
+              "displayName": "iCalUID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "startDate",
+              "displayName": "startDate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "duration",
+              "displayName": "duration",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": true
+            },
+            {
+              "id": "observacao",
+              "displayName": "observacao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "local",
+              "displayName": "local",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "function",
+              "displayName": "function",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        2144,
+        144
+      ],
+      "id": "c975b796-af2f-494d-82ff-31b2bcc97c4f",
+      "name": "update_event"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "professionals",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "active",
+              "condition": "eq",
+              "keyValue": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -128
+      ],
+      "id": "0660f91c-80ee-4882-ab22-82c1e8226911",
+      "name": "ProfessionalsSupabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "FDFIP1gfUCWJDsnM",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d23b1bc7-3ed9-4d80-8740-674c94821a70",
+              "name": "chatInput",
+              "value": "={{ $('When chat message received').item.json.chatInput }}",
+              "type": "string"
+            },
+            {
+              "id": "1db63104-e993-4697-8b98-627ca5dc2f3b",
+              "name": "sessionId",
+              "value": "={{ $('When chat message received').item.json.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "1751fb9f-acd4-4595-acab-b55ff13d7558",
+              "name": "profissionais",
+              "value": "={{ $('ProfessionalsSupabase').all().map(item => item.json).toJsonString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        -128
+      ],
+      "id": "6c51f315-85cd-426b-8648-c63c2d5dd372",
+      "name": "Config"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "chatsmcp",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "updated_at",
+              "condition": "lte",
+              "keyValue": "={{ $now.toUTC().minus(5,'minutes')}}"
+            },
+            {
+              "keyName": "app",
+              "condition": "eq",
+              "keyValue": "agendamento"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -288
+      ],
+      "id": "72701246-2ec1-4b1f-bf48-aef02d25c9ad",
+      "name": "ListChats-Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "FDFIP1gfUCWJDsnM",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# Você é um agente facilitador de vendas e está buscando conversas não finalizadas entre o cliente e um agent de IA. \n\n# Cria a responda apenas a resposta não precisa justificar sua resposta\n\n# Identifique o cliente não enviou mais mensagens de resposta\n\n# Se o cliente não responder mesmo assim, agradeça e diga que irá encerrar o pedido e está a disposição para outros pedidos\n\n# Use frase simples e naturais como nos exemplos\n\nExemplos : \n - 'Oi .. ainda está ai'\n - 'E ai ? vamos finalizar o pedido?' \n\n# Conversa entre o cliete e o agente de IA:\n{{ $json.texto }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        2256,
+        -720
+      ],
+      "id": "4507023b-371e-4330-8bbe-c25614fad92d",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "inputText": "=Data/Hora:\n{{ $now.toDateTime().format('yyyy-MM-dd HH:mm:ss') }}\n\nÚltimo diálogo entre o cliente e o chatbot:\n\n- Menasgem do cliente: {{ $json.user_message || \"\"}}\n\n- Resposta do chatbot : {{ $json.bot_message }}\n\n",
+        "categories": {
+          "categories": [
+            {
+              "category": "pendente_resposta",
+              "description": "O bot fez uma pergunta ou conversa está pendente devido a uma informação que o cliente ficou de fornecer ou confirmar"
+            },
+            {
+              "category": "encerrada",
+              "description": "Houve um desfecho da conversa e o agente de IA se despediu"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        -704
+      ],
+      "id": "def9c7c4-0119-428d-acf9-126ed5db72ee",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "tableId": "chat_messagesmcp",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $('Text Classifier').item.json.phone }}"
+            },
+            {
+              "fieldId": "conversation_id",
+              "fieldValue": "={{ $('Text Classifier').item.json.phone }}"
+            },
+            {
+              "fieldId": "message_type",
+              "fieldValue": "=followup"
+            },
+            {
+              "fieldId": "bot_message",
+              "fieldValue": "={{ $('SetConfig').item.json.output }}"
+            },
+            {
+              "fieldId": "active",
+              "fieldValue": "false"
+            },
+            {
+              "fieldId": "user_message",
+              "fieldValue": ".."
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2432,
+        400
+      ],
+      "id": "f99f33b0-1517-4fa6-b39c-3974153aba03",
+      "name": "Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "FDFIP1gfUCWJDsnM",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        352,
+        -704
+      ],
+      "id": "adec7c76-8a6a-461a-b833-84fe58067394",
+      "name": "Loop Over Items1",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        2096,
+        -384
+      ],
+      "id": "d8f20cff-0c59-4593-8edd-2ee212bb6857",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "za9spDATxkbquJKD",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        -384
+      ],
+      "id": "ad881ab3-9149-4b6b-9171-b249880a4170",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "za9spDATxkbquJKD",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1904,
+        400
+      ],
+      "id": "1f0d99ef-3d95-48a7-856c-c52f5b4d8415",
+      "name": "Wait1",
+      "webhookId": "4ff76c77-1df9-48f5-b84f-d0be11b86fe9"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        -688
+      ],
+      "id": "238857a5-ad22-4978-a232-9e47ae52adc0",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "chat_messagesmcp",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('SetData1')?.item?.json?.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "active",
+              "fieldValue": "false"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        384
+      ],
+      "id": "861277df-c9b7-4a09-b436-53a67e6ca080",
+      "name": "DisableMessage-Supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "FDFIP1gfUCWJDsnM",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('SetConfig').first().json.evolution_api_url }}/message/sendText/{{ $('SetConfig').first().json.evolution_api_instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.evolution_api_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "488bd079-0825-4810-b629-031313ad1e3e",
+      "name": "Evolution API - HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2480,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9c00627-84a9-49a9-bc7e-d923a5918346",
+              "name": "output",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "1e57eb87-d78f-424b-ab84-7738ce384405",
+              "name": "evolution_api_url",
+              "value": "https://api.njn8n.shop",
+              "type": "string"
+            },
+            {
+              "id": "44fd293f-0a32-4499-90fc-bffca5bb524b",
+              "name": "evolution_api_key",
+              "value": "3A8FA4927836-48F2-9DE4-1FB2115AEBF6",
+              "type": "string"
+            },
+            {
+              "id": "8fd329d8-2237-4ad3-a496-ee49b5042fc5",
+              "name": "evolution_api_instance",
+              "value": "Autobot.IA",
+              "type": "string"
+            },
+            {
+              "id": "0e34f673-b6dc-4748-89d2-a178dfe91853",
+              "name": "phone",
+              "value": "={{ $('SetData1').item.json.phone }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2464,
+        -432
+      ],
+      "id": "320f74ca-6f32-461a-a2a6-6821c51aee58",
+      "name": "SetConfig"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        912,
+        -704
+      ],
+      "id": "d8451079-2ac7-4b51-add2-efaedc6fa5bd",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        -704
+      ],
+      "id": "a60d1b35-aa3a-47c2-a2a7-db95bb420d5b",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "chat_messagesmcp",
+        "limit": 10,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone",
+              "condition": "eq",
+              "keyValue": "={{ $json.phone }}"
+            },
+            {
+              "keyName": "active",
+              "condition": "eq",
+              "keyValue": "true"
+            },
+            {
+              "keyName": "message_type",
+              "condition": "neq",
+              "keyValue": "followup"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        624,
+        -688
+      ],
+      "id": "ecc216b6-4d7c-4df9-96f9-d8da98b2e6b7",
+      "name": "ListMessages-Supabase",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "FDFIP1gfUCWJDsnM",
+          "name": "Autobot IA"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cd59cd96-3e3e-466f-9e2a-a6ed035fc96b",
+              "leftValue": "={{ $('ListMessages-Supabase').item.json.values() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        -400
+      ],
+      "id": "cd16325d-8531-4ad5-b211-f4fc147e17e5",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        752,
+        -32
+      ],
+      "id": "46571416-86a1-4d4f-9a9d-d4fb68667ece",
+      "name": "Wait2",
+      "webhookId": "12f53b39-942d-460e-8990-60d025527805"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4a874784-906e-4dc0-b6b7-a9381254a240",
+              "name": "id",
+              "value": "={{ $('Limit')?.item?.json?.id }}",
+              "type": "string"
+            },
+            {
+              "id": "4d40dba4-549d-4496-8fcb-fa8a5608d71e",
+              "name": "bot_message",
+              "value": "={{ $json.bot_message }}",
+              "type": "string"
+            },
+            {
+              "id": "07d676dc-189d-4749-8e96-4602b687f21b",
+              "name": "user_message",
+              "value": "={{ $json.user_message }}",
+              "type": "string"
+            },
+            {
+              "id": "d03da6a5-32bf-4ace-9f9e-934d6eb20edd",
+              "name": "phone",
+              "value": "={{ $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "46bb45be-5250-408c-8852-5db12d4dd5ee",
+              "name": "message_type",
+              "value": "={{ $json.message_type }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        -704
+      ],
+      "id": "8133adfc-7862-48a6-807d-e03b5699e179",
+      "name": "SetData1"
+    },
+    {
+      "parameters": {
+        "content": "## Followup-restauranet\n",
+        "height": 1400,
+        "width": 2680,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -784
+      ],
+      "id": "47069cec-6c05-4047-9bc4-f7d1e9dcc2c9",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        1056
+      ],
+      "id": "a59eebe9-4255-4722-852e-6dc155f3a068",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Timezone \"simples\": considera o servidor em UTC e ajusta pra SP\nconst now = new Date();\n\n// calcula \"amanhã\"\nconst tomorrow = new Date(\n  now.getFullYear(),\n  now.getMonth(),\n  now.getDate() + 1,\n  0, 0, 0, 0\n);\n\nconst start = new Date(\n  tomorrow.getFullYear(),\n  tomorrow.getMonth(),\n  tomorrow.getDate(),\n  0, 0, 0, 0\n).toISOString();\n\nconst end = new Date(\n  tomorrow.getFullYear(),\n  tomorrow.getMonth(),\n  tomorrow.getDate(),\n  23, 59, 59, 999\n).toISOString();\n\n// lista de profissionais (ajusta com seus iCalUID reais)\nconst professionals = [\n  {\n    doctor_name: 'Dr. José Lira',\n    calendarId: '99b2dfb64b09000ca4d7b164b4a03207d6aee6f6f6603eeb68f1f3efbfa036fb@group.calendar.google.com'\n  },\n  {\n    doctor_name: 'Dr. Nicolas Martins',\n    calendarId: 'f42fa520a6361e2865c762ef986122bd1041192cde2b3fcc4f3d1e6bc0d7d53c@group.calendar.google.com'\n  },\n];\n\nreturn professionals.map(p => ({\n  json: {\n    ...p,\n    timeMin: start,\n    timeMax: end,\n  }\n}));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        1056
+      ],
+      "id": "a53cb111-a01a-43b5-a224-5b49a64ca785",
+      "name": "BuildReminders"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "={{$json[\"calendarId\"]}}",
+          "mode": "id"
+        },
+        "returnAll": true,
+        "timeMax": "={{ $now.plus({ days: 2 }) }}",
+        "options": {
+          "timeZone": {
+            "__rl": true,
+            "value": "America/Sao_Paulo",
+            "mode": "list",
+            "cachedResultName": "America/Sao_Paulo"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        1056
+      ],
+      "id": "3201e7f6-fb6c-4ce2-aca8-757ccb1a3c45",
+      "name": "Get many events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "EQoXX37xEzsgZxEC",
+          "name": "Autobot Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const tz = 'America/Sao_Paulo';\n\nfunction formatHora(dateTimeStr) {\n  const d = new Date(dateTimeStr);\n  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: tz });\n}\n\nfunction formatData(dateTimeStr) {\n  const d = new Date(dateTimeStr);\n  return d.toLocaleDateString('pt-BR', { timeZone: tz });\n}\n\nconst doctorByCalendar = {\n  '99b2dfb64b09000ca4d7b164b4a03207d6aee6f6f6603eeb68f1f3efbfa036fb@group.calendar.google.com': 'Dr. José Lira',\n  'f42fa520a6361e2865c762ef986122bd1041192cde2b3fcc4f3d1e6bc0d7d53c@group.calendar.google.com': 'Dr. Nicolas Martins',\n};\n\nreturn items.map(item => {\n  const ev = item.json;\n  const desc = ev.description || '';\n  const summary = ev.summary || '';\n\n  // Tenta extrair telefone da descrição (Padrão: Phone: 55...) ou procura qualquer sequência de celular BR\n  let phoneMatch = desc.match(/Phone:\\s*(\\d+)/i) || desc.match(/(?:55)?\\d{2}9\\d{8}/);\n  \n  // Se não achar na descrição, tenta no título (Summary) como fallback\n  if (!phoneMatch) {\n      phoneMatch = summary.match(/(?:55)?\\d{2}9\\d{8}/);\n  }\n\n  const phone = phoneMatch ? phoneMatch[0].replace(/\\D/g, '') : null;\n\n  // Extrai nome do título (Ex: Cliente Nicolas | ...)\n  const nameMatch = summary.match(/Cliente\\s*[:|-]?\\s*([^|]+)/i);\n  const name = nameMatch ? nameMatch[1].trim() : 'Cliente';\n\n  if (!phone) return null; // Pula se não tiver telefone\n\n  const startDateTime = ev.start?.dateTime || ev.start?.date;\n  const date = formatData(startDateTime);\n  const time = formatHora(startDateTime);\n\n  const organizer = ev.organizer?.email || '';\n  // Se não achar o email do organizador na lista, usa o nome que vier no evento ou um genérico\n  const doctor_name = doctorByCalendar[organizer] || ev.doctor_name || 'nosso especialista';\n\n  const msg = `Olá, ${name}! 👋\\nLembrando que sua consulta com ${doctor_name} está marcada para amanhã, dia ${date}, às ${time}.\\nSe precisar remarcar, é só avisar!`;\n\n  return {\n    json: {\n      event_id: ev.id,\n      phone,\n      name,\n      doctor_name,\n      date,\n      time,\n      msg,\n    },\n  };\n}).filter(i => i !== null);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        1056
+      ],
+      "id": "5166c2ce-9ab0-4811-8b6f-69bb34ec7b76",
+      "name": "PrepareReminder"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.njn8n.shop/message/sendText/Autobot.IA",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "3A8FA4927836-48F2-9DE4-1FB2115AEBF6"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.msg }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        768,
+        1056
+      ],
+      "id": "9303aa58-a0b5-4933-80d2-fce112a79f76",
+      "name": "SendReminder"
+    },
+    {
+      "parameters": {
+        "content": "## Lembrete agendamento\n \n\n\n",
+        "height": 512,
+        "width": 1824,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        848
+      ],
+      "typeVersion": 1,
+      "id": "da597264-42e2-4795-a12c-2040cea155fa",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "tableId": "reminders_log",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "event_id",
+              "fieldValue": "={{ $('PrepareReminder').item.json.event_id }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('PrepareReminder').item.json.event_id }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $('PrepareReminder').item.json.phone }}"
+            },
+            {
+              "fieldId": "doctor_name",
+              "fieldValue": "={{ $('PrepareReminder').item.json.doctor_name }}"
+            },
+            {
+              "fieldId": "date",
+              "fieldValue": "={{ $('PrepareReminder').item.json.date }}"
+            },
+            {
+              "fieldId": "time",
+              "fieldValue": "={{ $('PrepareReminder').item.json.time }}"
+            },
+            {
+              "fieldId": "msg",
+              "fieldValue": "={{ $('PrepareReminder').item.json.msg }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "\"success\""
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        944
+      ],
+      "id": "460fcc66-76f7-4109-9979-03da4cde5491",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "FDFIP1gfUCWJDsnM",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "reminders_log",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "condition": "eq",
+              "keyValue": "={{ $('PrepareReminder').item.json.event_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        976,
+        1056
+      ],
+      "id": "9102d0a5-7158-40a0-bcc1-0bbcda0dc1e7",
+      "name": "Get many rows",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "FDFIP1gfUCWJDsnM",
+          "name": "Autobot IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fc70dd55-129c-4e99-b178-ad995cbbc08c",
+              "leftValue": "={{ Object.keys($json).length === 0 }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1184,
+        1056
+      ],
+      "id": "b5a27abf-3e0f-4707-a270-fc2d1e143ab4",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        1168
+      ],
+      "id": "d9b7c6f9-ee00-4f55-9dba-0f91a7a21ffc",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.category }}",
+                    "rightValue": "pendente_resposta",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "fabed78e-4276-4bfb-9af9-14f345b0470b"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        1984,
+        -720
+      ],
+      "id": "fc260ed4-1647-403a-a16c-63eaaf38e9e0",
+      "name": "Switch"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "ProfessionalsSupabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "list_slots": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "new_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_all_events": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "list_my_events": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "delete_only_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update_event": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ProfessionalsSupabase": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ListChats-Supabase": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "SetConfig",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "ListMessages-Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "DisableMessage-Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "ListChats-Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DisableMessage-Supabase": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evolution API - HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetConfig": {
+      "main": [
+        [
+          {
+            "node": "Evolution API - HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "SetData1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ListMessages-Supabase": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetData1": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "BuildReminders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BuildReminders": {
+      "main": [
+        [
+          {
+            "node": "Get many events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events": {
+      "main": [
+        [
+          {
+            "node": "PrepareReminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepareReminder": {
+      "main": [
+        [
+          {
+            "node": "SendReminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SendReminder": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6437496d-66d0-47d2-ad4a-877e609b76da",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cd73efdefd890ac4bc33e0de8679e68f96bddd2bd52def5dc65e9258f90a39d7"
+  },
+  "id": "VhWORiF0sdyf9uGY",
+  "tags": [
+    {
+      "updatedAt": "2025-11-08T13:54:18.743Z",
+      "createdAt": "2025-11-08T13:54:18.743Z",
+      "id": "RFRlLXIRt0SeVFm8",
+      "name": "agendamento-mcp"
+    }
+  ]
+}

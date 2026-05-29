@@ -1,0 +1,167 @@
+{
+  "name": "ENVIA EMAIL (OFC)",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "name"
+            },
+            {
+              "name": "email"
+            },
+            {
+              "name": "doctor_name"
+            },
+            {
+              "name": "date"
+            },
+            {
+              "name": "time"
+            },
+            {
+              "name": "location"
+            },
+            {
+              "name": "event_id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7a4ac9e2-ae3b-4773-8477-32d55c51b380",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fe3bd614-05d9-4d6c-85fa-ca85d78b5aa2",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "9e12ef5b-9daf-466c-bd39-ee1117c15364",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "cfb92a0a-018d-43c4-8f5f-d99ca5f7476c",
+              "name": "doctor_name",
+              "value": "={{ $json.doctor_name }}",
+              "type": "string"
+            },
+            {
+              "id": "4b8144b7-6396-4981-bb0b-f3ef51e1c137",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "c3941829-eda1-473f-9970-c761a9cce1ed",
+              "name": "time",
+              "value": "={{ $json.time }}",
+              "type": "string"
+            },
+            {
+              "id": "7a56abd7-a6a8-4734-b9fe-ce6b9c8516f0",
+              "name": "location",
+              "value": "Endereço: Rua das Palmeiras, 125 – Centro, São Paulo – SP\n CEP: 01025-000\n Referência: Próximo à estação República do Metrô",
+              "type": "string"
+            },
+            {
+              "id": "cf22d5e4-ee08-42de-b006-0b52e728a57d",
+              "name": "event_id",
+              "value": "={{ $json.event_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "46bf28cd-8c0f-4a00-a413-8fdc3cfd359f",
+      "name": "SetDadosEmail"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "={{ \"Sua consulta foi confirmada - \" + $json.doctor_name }}",
+        "message": "=<div style=\"font-family: 'Segoe UI', Arial, sans-serif; color: #333; background-color: #f9fafc; padding: 25px; border-radius: 10px; border: 1px solid #e0e0e0;\">\n  <h2 style=\"color: #2b6cb0; margin-bottom: 10px;\">🦷 Olá, <span style=\"color: #1a202c;\">{{ $json.name }}</span>!</h2>\n\n  <p style=\"font-size: 15px; line-height: 1.6;\">\n    Sua consulta odontológica foi <b style=\"color: #38a169;\">confirmada ✅</b>.<br>\n    Veja os detalhes abaixo:\n  </p>\n\n  <div style=\"background-color: #edf2f7; padding: 15px 20px; border-radius: 8px; margin-top: 15px; margin-bottom: 20px;\">\n    <p style=\"margin: 8px 0;\"><b>👤 Paciente:</b> {{ $json.name }}</p>\n    <p style=\"margin: 8px 0;\"><b>🩺 Profissional responsável:</b> {{ $json.doctor_name }}</p>\n    <p style=\"margin: 8px 0;\"><b>📅 Data:</b> {{ $json.date }}</p>\n    <p style=\"margin: 8px 0;\"><b>⏰ Horário:</b> {{ $json.time }}</p>\n    <p style=\"margin: 8px 0;\"><b>📍 Local:</b> {{ $json.location }}</p>\n  </div>\n\n  <p style=\"font-size: 14px; line-height: 1.6;\">\n    Caso precise <b>remarcar</b> ou <b>cancelar</b> sua consulta, entre em contato conosco o quanto antes.<br>\n    Estamos ansiosos para vê-lo sorrindo 😁\n  </p>\n\n  <hr style=\"margin: 20px 0; border: none; border-top: 1px solid #e2e8f0;\">\n  \n  <p style=\"font-size: 12px; color: #718096;\">\n    Esta é uma mensagem automática — por favor, não responda este e-mail.<br>\n    <i>💡 Enviado automaticamente pela Autobot IA via <a href=\"https://n8n.io\" target=\"_blank\" style=\"color: #3182ce; text-decoration: none;\">n8n</a></i>\n  </p>\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "a8d5ed39-bd85-4323-a39d-1f61e34d605c",
+      "name": "Email",
+      "webhookId": "e64401f9-e5e8-4f7c-941b-8c999dbd9369",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "pDW5rKTN10JwRafw",
+          "name": "Autobot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "SetDadosEmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetDadosEmail": {
+      "main": [
+        [
+          {
+            "node": "Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d54f9bb2-e671-4efa-a153-09cafd99d404",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cd73efdefd890ac4bc33e0de8679e68f96bddd2bd52def5dc65e9258f90a39d7"
+  },
+  "id": "kyv9FW3d7DccRISE",
+  "tags": [
+    {
+      "updatedAt": "2025-11-08T13:54:18.743Z",
+      "createdAt": "2025-11-08T13:54:18.743Z",
+      "id": "RFRlLXIRt0SeVFm8",
+      "name": "agendamento-mcp"
+    }
+  ]
+}
